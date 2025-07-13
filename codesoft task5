@@ -1,0 +1,61 @@
+import json
+import os
+
+DATA_FILE = "contacts.json"
+
+def load_contacts():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE) as f:
+            return json.load(f)
+    return []
+
+def save_contacts(contacts):
+    with open(DATA_FILE, "w") as f:
+        json.dump(contacts, f, indent=2)
+
+def prompt_contact(existing=None):
+    contact = existing or {}
+    contact['name'] = input(f"Name [{contact.get('name','')}]: ") or contact.get('name')
+    contact['phone'] = input(f"Phone [{contact.get('phone','')}]: ") or contact.get('phone')
+    contact['email'] = input(f"Email [{contact.get('email','')}]: ") or contact.get('email')
+    contact['address'] = input(f"Address [{contact.get('address','')}]: ") or contact.get('address')
+    return contact
+
+def list_contacts(contacts):
+    for i, c in enumerate(contacts, 1):
+        print(f"{i}. {c['name']} – {c['phone']}")
+
+def search_contacts(contacts, term):
+    term = term.lower()
+    return [c for c in contacts if term in c.get('name','').lower() or term in c.get('phone','')]
+
+def main():
+    contacts = load_contacts()
+
+    while True:
+        print("\n1.Add 2.View All 3.Search 4.Update 5.Delete 6.Exit")
+        choice = input("Choose an option: ").strip()
+
+        if choice == "1":
+            new = prompt_contact()
+            contacts.append(new)
+            print("✅ Contact added.")
+
+        elif choice == "2":
+            print("\n📇 All Contacts:")
+            list_contacts(contacts)
+
+        elif choice == "3":
+            term = input("Search by name or phone: ")
+            found = search_contacts(contacts, term)
+            if found:
+                list_contacts(found)
+            else:
+                print("No contacts found.")
+
+        elif choice == "4":
+            list_contacts(contacts)
+            idx = input("Update #?: ").strip()
+            if idx.isdigit() and 1 <= int(idx) <= len(contacts):
+                contacts[int(idx)-1] = prompt_contact(contacts[int(idx)-1])
+               
